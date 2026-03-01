@@ -3,197 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABG Interpreter Pro (Visual)</title>
+    <title>ABG Interpreter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
     <style>
-        :root { --medical-blue: #6366f1; --medical-bg: #fafaff; }
+        :root { 
+            --brand-indigo: #4338ca; 
+            --brand-bg: #f8fafc; 
+            --brand-text: #1e293b; 
+            --brand-border: #e2e8f0; 
+            /* Muted Palette */
+            --palette-acid: #be123c;
+            --palette-alkaline: #059669;
+            --palette-neutral: #475569;
+            --palette-bg-acid: #fff1f2;
+            --palette-bg-alkaline: #ecfdf5;
+        }
         body { 
-            background-color: var(--medical-bg); 
+            background-color: var(--brand-bg); 
             font-family: 'Quicksand', sans-serif; 
-            color: #475569;
+            color: var(--brand-text);
             letter-spacing: 0.01em;
         }
-        .card { background: white; border-radius: 24px; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.03); border: 1.5px solid #f1f5f9; }
-        .input-group label { display: block; font-size: 0.6rem; font-weight: 700; color: #94a3b8; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.1em; }
-        input { 
-            width: 100%; padding: 8px 12px; border: 2.5px solid #f8fafc; border-radius: 14px; outline: none; 
-            font-size: 0.9rem; font-family: 'Fira Code', monospace; transition: all 0.2s ease; background: #f8fafc;
+        .card { 
+            background: white; 
+            border-radius: 24px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
+            border: 1px solid var(--brand-border); 
         }
-        input::placeholder { font-family: 'Quicksand', sans-serif; font-size: 0.75rem; color: #cbd5e1; }
-        input:focus { border-color: #e0e7ff; background: white; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.06); }
+        .input-group label { 
+            display: block; 
+            font-size: 0.7rem; 
+            font-weight: 800; 
+            color: #64748b; 
+            margin-bottom: 4px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+        }
+        input { 
+            width: 100%; 
+            padding: 10px 14px; 
+            border: 2px solid #f1f5f9; 
+            border-radius: 12px; 
+            outline: none; 
+            font-size: 0.9rem; 
+            font-family: 'Fira Code', monospace; 
+            transition: all 0.2s ease; 
+            background: #f8fafc;
+            color: var(--brand-text);
+        }
+        input::placeholder {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 500;
+        }
+        input:focus { border-color: var(--brand-indigo); background: white; box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.05); }
         
-        .gauge-container { height: 18px; background: #f1f5f9; border-radius: 20px; position: relative; margin: 12px 0 24px 0; overflow: hidden; border: 1.5px solid #fff; }
-        .gauge-normal-zone { position: absolute; height: 100%; background: #10b981; opacity: 0.25; border-left: 1px solid #10b981; border-right: 1px solid #10b981; }
-        .gauge-marker { position: absolute; top: 0; width: 8px; height: 100%; background: #6366f1; border-radius: 10px; transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 10; border: 2px solid white; box-shadow: 0 0 8px rgba(99, 102, 241, 0.3); }
-        .gauge-label { position: absolute; top: 22px; font-size: 10px; color: #94a3b8; font-weight: 700; font-family: 'Fira Code', monospace; }
+        .gauge-container { 
+            height: 12px; 
+            background: #f1f5f9; 
+            border-radius: 20px; 
+            position: relative; 
+            margin: 12px 0 28px 0; 
+            overflow: hidden; 
+        }
+        .gauge-normal-zone { 
+            position: absolute; 
+            height: 100%; 
+            background: var(--palette-alkaline); 
+            opacity: 0.2; 
+        }
+        .gauge-marker { 
+            position: absolute; 
+            top: 0; 
+            width: 8px; 
+            height: 100%; 
+            background: var(--brand-indigo); 
+            border-radius: 10px; 
+            transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            z-index: 10; 
+            border: 2px solid white; 
+        }
+        .gauge-label { 
+            position: absolute; 
+            top: 18px; 
+            font-size: 10px; 
+            color: #94a3b8; 
+            font-weight: 700; 
+            font-family: 'Fira Code', monospace; 
+        }
         
-        .row-acidosis { background-color: #fffbfc; border-left: 6px solid #fecaca; }
-        .row-alkalosis { background-color: #fafff7; border-left: 6px solid #d1fae5; }
-        .tag-acid { color: #f43f5e; background: #fff1f2; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 10px; }
-        .tag-alk { color: #10b981; background: #f0fdf4; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 10px; }
+        .row-acidosis { background-color: var(--palette-bg-acid); border-left: 4px solid var(--palette-acid); }
+        .row-alkalosis { background-color: var(--palette-bg-alkaline); border-left: 4px solid var(--palette-alkaline); }
         
-        table th { letter-spacing: 0.1em; font-weight: 700; text-transform: uppercase; background: #475569; color: #f8fafc; padding: 12px 16px; font-size: 0.7rem; }
-        .btn-clear { background: #fff; border: 2px solid #f1f5f9; border-radius: 16px; transition: all 0.2s; font-size: 0.75rem; color: #94a3b8; font-weight: 700; }
-        .btn-clear:hover { background: #fff1f2; border-color: #ffe4e6; color: #f43f5e; }
+        table th { 
+            letter-spacing: 0.1em; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            background: #f8fafc; 
+            color: #64748b; 
+            padding: 12px 18px; 
+            font-size: 0.7rem; 
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .btn-clear { 
+            background: #fff; 
+            border: 1px solid var(--brand-border); 
+            border-radius: 12px; 
+            transition: all 0.2s; 
+            font-size: 0.75rem; 
+            color: #64748b; 
+            font-weight: 700; 
+        }
+        .btn-clear:hover { background: #fef2f2; border-color: #fecaca; color: #be123c; }
         
-        .result-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #cbd5e1; margin-bottom: 6px; }
+        .result-title { 
+            font-size: 0.7rem; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 0.1em; 
+            color: #94a3b8; 
+            margin-bottom: 8px; 
+        }
+
+        .diagnosis-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            border-radius: 16px;
+        }
+
+        .triple-badge {
+            display: inline-block;
+            background: #6366f1;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: 900;
+            margin-bottom: 6px;
+        }
     </style>
 </head>
-<body class="p-3 md:p-6">
+<body class="p-4 md:p-8">
 
     <div class="max-w-5xl mx-auto">
-        <header class="mb-5 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div class="text-center sm:text-left">
-                <h1 class="text-3xl font-bold text-slate-800 tracking-tight">ABG Interpreter</h1>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Diagnostic Visualization Suite</p>
+        <header class="mb-8 flex flex-col sm:flex-row justify-between items-end gap-4">
+            <div>
+                <h1 class="text-3xl font-black text-slate-800 tracking-tight">ABG Interpreter</h1>
+                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-[0.2em] mt-1">Clinical Diagnostic Tool</p>
             </div>
             <button onclick="resetFields()" class="btn-clear px-6 py-2 uppercase tracking-wider">
-                Reset Data
+                Reset Values
             </button>
         </header>
 
         <!-- Lab Input Card -->
-        <section class="card p-4 mb-5">
-            <div class="flex flex-col md:flex-row items-center gap-4">
-                <div class="flex-shrink-0 hidden md:block">
-                    <h3 class="result-title !mb-0">Labs</h3>
-                </div>
-                <div class="flex-grow grid grid-cols-3 gap-3 w-full">
+        <section class="card p-8 mb-6">
+            <div class="flex flex-col md:flex-row items-start gap-8">
+                <div class="flex-grow grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
                     <div class="input-group">
-                        <label>pH</label>
-                        <input type="number" id="ph" step="0.01" placeholder="7.35-7.45" oninput="calculate()">
+                        <label>pH Level</label>
+                        <input type="number" id="ph" step="0.01" placeholder="Normal: 7.35-7.45" oninput="calculate()">
                     </div>
                     <div class="input-group">
-                        <label>pCO2</label>
-                        <input type="number" id="pco2" step="0.1" placeholder="35-45" oninput="calculate()">
+                        <label>pCO2 (mmHg)</label>
+                        <input type="number" id="pco2" step="0.1" placeholder="Normal: 35-45" oninput="calculate()">
                     </div>
                     <div class="input-group">
-                        <label>HCO3</label>
-                        <input type="number" id="hco3" step="0.1" placeholder="22-26" oninput="calculate()">
+                        <label>HCO3 (mEq/L)</label>
+                        <input type="number" id="hco3" step="0.1" placeholder="Normal: 22-26" oninput="calculate()">
                     </div>
                 </div>
-                <div class="flex-shrink-0 flex items-center gap-2 border-t md:border-t-0 md:border-l pt-3 md:pt-0 md:pl-4 border-slate-100 w-full md:w-auto">
-                    <span class="result-title !mb-0">AG</span>
-                    <label class="relative inline-block w-10 h-5 cursor-pointer">
+                <div class="flex-shrink-0 flex flex-col gap-3 border-t md:border-t-0 md:border-l pt-6 md:pt-0 md:pl-8 border-slate-100 w-full md:w-auto">
+                    <span class="result-title !mb-0">Anion Gap Mode</span>
+                    <label class="relative inline-block w-12 h-6 cursor-pointer">
                         <input type="checkbox" id="useAnionGap" class="sr-only peer" onchange="toggleAnionGap()">
-                        <div class="w-full h-full bg-slate-100 rounded-full peer peer-checked:bg-indigo-200 transition-colors"></div>
-                        <div class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
+                        <div class="w-full h-full bg-slate-200 rounded-full peer peer-checked:bg-indigo-500 transition-colors"></div>
+                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full peer-checked:translate-x-6 transition-transform shadow-sm"></div>
                     </label>
                 </div>
             </div>
 
-            <div id="anionGapInputs" class="hidden mt-4 pt-4 border-t border-slate-50">
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="input-group"><label>Na+</label><input type="number" id="na" step="1" placeholder="140" oninput="calculate()"></div>
-                    <div class="input-group"><label>Cl-</label><input type="number" id="cl" step="1" placeholder="102" oninput="calculate()"></div>
-                    <div class="input-group"><label>Albumin</label><input type="number" id="albumin" step="0.1" placeholder="4.0" oninput="calculate()"></div>
+            <div id="anionGapInputs" class="hidden mt-8 pt-8 border-t border-slate-100">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div class="input-group"><label>Sodium (Na+)</label><input type="number" id="na" step="1" placeholder="Normal: 135-145" oninput="calculate()"></div>
+                    <div class="input-group"><label>Chloride (Cl-)</label><input type="number" id="cl" step="1" placeholder="Normal: 98-107" oninput="calculate()"></div>
+                    <div class="input-group"><label>Albumin</label><input type="number" id="albumin" step="0.1" placeholder="Normal: 3.5-5.0" oninput="calculate()"></div>
                 </div>
             </div>
         </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- Results -->
-            <div class="card p-6 flex flex-col justify-center border-t-4 border-indigo-100">
-                <h2 class="result-title">Primary Diagnosis</h2>
-                <div id="interpretation" class="text-2xl font-bold text-slate-200 mb-2 leading-tight">Awaiting Data</div>
-                <div id="compensation" class="text-[12px] text-slate-500 font-medium bg-slate-50 p-3 rounded-xl min-h-[50px]">
-                    Enter values to begin analysis.
+            <div class="card p-8 flex flex-col justify-center border-t-4 border-slate-200">
+                <h2 class="result-title">Clinical Interpretation</h2>
+                <div id="interpretation" class="text-xl font-black text-slate-300 mb-4 leading-tight uppercase tracking-tight">Awaiting Input...</div>
+                <div id="compensation" class="diagnosis-box text-sm text-slate-600 font-medium leading-relaxed min-h-[80px]">
+                    Enter arterial blood gas values to generate a full physiological interpretation.
                 </div>
             </div>
 
             <!-- AG Result -->
-            <div id="agResultCard" class="card p-6 bg-indigo-50/10 border-2 border-indigo-50 flex flex-col justify-center opacity-40 transition-opacity duration-300">
-                <h2 class="result-title !text-indigo-300">Anion Gap Analysis</h2>
-                <div class="flex gap-8 mb-3">
-                    <div><span class="text-[9px] text-slate-400 uppercase font-bold block">Measured</span> <span id="agValue" class="text-2xl font-bold font-mono text-slate-600">--</span></div>
-                    <div><span class="text-[9px] text-slate-400 uppercase font-bold block">Corrected</span> <span id="agCorrected" class="text-2xl font-bold font-mono text-indigo-400">--</span></div>
+            <div id="agResultCard" class="card p-8 bg-white flex flex-col justify-center opacity-40 transition-all duration-300">
+                <h2 class="result-title">Gap Analysis</h2>
+                <div class="flex gap-10 mb-6">
+                    <div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Measured Gap</span> <span id="agValue" class="text-3xl font-black font-mono text-slate-700 tracking-tighter">--</span></div>
+                    <div><span class="text-[10px] text-indigo-400 uppercase font-bold block mb-1">Albumin Corr.</span> <span id="agCorrected" class="text-3xl font-black font-mono text-indigo-600 tracking-tighter">--</span></div>
                 </div>
-                <div id="deltaResult" class="text-[9px] font-bold text-white bg-indigo-300 px-3 py-1.5 rounded-full inline-block uppercase tracking-wider">Incomplete Data</div>
+                <div id="deltaResult" class="text-[10px] font-bold text-slate-400 border border-slate-200 px-3 py-1.5 rounded-lg inline-block uppercase tracking-widest">Gap Calculations Inactive</div>
             </div>
         </div>
 
-        <!-- DASHBOARD -->
-        <div class="card p-6 mb-5">
-            <h3 class="result-title text-center mb-6">Interactive Range Visualizer</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-4">
+        <!-- Dashboard Visualization -->
+        <div class="card p-8 mb-8">
+            <h3 class="result-title text-center mb-10">Physiological Gauges</h3>
+            <!-- ABG Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-10 mb-6">
                 <div class="px-2">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">pH</span>
-                        <span id="val-ph" class="text-lg font-bold text-indigo-500 font-mono">--</span>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase">pH</span>
+                        <span id="val-ph" class="text-xl font-black text-slate-700 font-mono">--</span>
                     </div>
                     <div class="gauge-container">
                         <div class="gauge-normal-zone" style="left: 43.75%; width: 12.5%;"></div>
                         <div id="marker-ph" class="gauge-marker" style="left: 50%; opacity: 0;"></div>
                         <span class="gauge-label" style="left: 0%">7.0</span>
-                        <span class="gauge-label" style="left: 43.75%; color: #10b981;">7.35</span>
-                        <span class="gauge-label" style="left: 56.25%; color: #10b981;">7.45</span>
+                        <span class="gauge-label" style="left: 43.75%">7.35</span>
+                        <span class="gauge-label" style="left: 56.25%">7.45</span>
                         <span class="gauge-label" style="right: 0%">7.8</span>
                     </div>
                 </div>
-
                 <div class="px-2">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">pCO2</span>
-                        <span id="val-pco2" class="text-lg font-bold text-indigo-500 font-mono">--</span>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase">pCO2</span>
+                        <span id="val-pco2" class="text-xl font-black text-slate-700 font-mono">--</span>
                     </div>
                     <div class="gauge-container">
                         <div class="gauge-normal-zone" style="left: 30%; width: 20%;"></div>
                         <div id="marker-pco2" class="gauge-marker" style="left: 50%; opacity: 0;"></div>
                         <span class="gauge-label" style="left: 0%">20</span>
-                        <span class="gauge-label" style="left: 30%; color: #10b981;">35</span>
-                        <span class="gauge-label" style="left: 50%; color: #10b981;">45</span>
+                        <span class="gauge-label" style="left: 30%">35</span>
+                        <span class="gauge-label" style="left: 50%">45</span>
                         <span class="gauge-label" style="right: 0%">70</span>
                     </div>
                 </div>
-
                 <div class="px-2">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">HCO3</span>
-                        <span id="val-hco3" class="text-lg font-bold text-indigo-500 font-mono">--</span>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase">HCO3</span>
+                        <span id="val-hco3" class="text-xl font-black text-slate-700 font-mono">--</span>
                     </div>
                     <div class="gauge-container">
                         <div class="gauge-normal-zone" style="left: 40%; width: 13.3%;"></div>
                         <div id="marker-hco3" class="gauge-marker" style="left: 50%; opacity: 0;"></div>
                         <span class="gauge-label" style="left: 0%">10</span>
-                        <span class="gauge-label" style="left: 40%; color: #10b981;">22</span>
-                        <span class="gauge-label" style="left: 53.3%; color: #10b981;">26</span>
+                        <span class="gauge-label" style="left: 40%">22</span>
+                        <span class="gauge-label" style="left: 53.3%">26</span>
                         <span class="gauge-label" style="right: 0%">40</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Electrolyte Row (Shown when AG is active) -->
+            <div id="electrolyteGauges" class="hidden grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-10 pt-6 border-t border-slate-50">
+                <div class="px-2">
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase">Sodium</span>
+                        <span id="val-na" class="text-xl font-black text-slate-600 font-mono">--</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-normal-zone" style="left: 33.3%; width: 33.3%;"></div>
+                        <div id="marker-na" class="gauge-marker" style="left: 50%; opacity: 0;"></div>
+                        <span class="gauge-label" style="left: 0%">120</span>
+                        <span class="gauge-label" style="left: 33.3%">135</span>
+                        <span class="gauge-label" style="left: 66.6%">145</span>
+                        <span class="gauge-label" style="right: 0%">160</span>
+                    </div>
+                </div>
+                <div class="px-2">
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase">Chloride</span>
+                        <span id="val-cl" class="text-xl font-black text-slate-600 font-mono">--</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-normal-zone" style="left: 30%; width: 30%;"></div>
+                        <div id="marker-cl" class="gauge-marker" style="left: 50%; opacity: 0;"></div>
+                        <span class="gauge-label" style="left: 0%">80</span>
+                        <span class="gauge-label" style="left: 30%">98</span>
+                        <span class="gauge-label" style="left: 60%">107</span>
+                        <span class="gauge-label" style="right: 0%">125</span>
+                    </div>
+                </div>
+                <div class="px-2">
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase">Albumin</span>
+                        <span id="val-albumin" class="text-xl font-black text-slate-600 font-mono">--</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-normal-zone" style="left: 37.5%; width: 37.5%;"></div>
+                        <div id="marker-albumin" class="gauge-marker" style="left: 50%; opacity: 0;"></div>
+                        <span class="gauge-label" style="left: 0%">2.0</span>
+                        <span class="gauge-label" style="left: 37.5%">3.5</span>
+                        <span class="gauge-label" style="left: 75%">5.0</span>
+                        <span class="gauge-label" style="right: 0%">6.0</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Reference Table -->
         <div class="card overflow-hidden">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr>
-                        <th class="w-1/4">Pathology</th>
-                        <th class="w-1/4">Value Trend</th>
-                        <th>Compensation Formula</th>
+                        <th class="w-1/3">Condition</th>
+                        <th class="w-1/4">Primary Change</th>
+                        <th>Compensation Expected</th>
                     </tr>
                 </thead>
-                <tbody class="text-[11px] text-slate-600">
+                <tbody class="text-[12px] text-slate-600 font-semibold">
                     <tr class="row-acidosis">
-                        <td class="px-6 py-4 font-bold">Metabolic Acidosis</td>
-                        <td class="px-6 py-4">HCO3 ↓</td>
-                        <td class="px-6 py-4 italic font-mono text-rose-400">pCO2 = (1.5 × HCO3) + 8 ± 2</td>
+                        <td class="px-6 py-4">Metabolic Acidosis</td>
+                        <td class="px-6 py-4">Bicarbonate ↓</td>
+                        <td class="px-6 py-4 font-mono text-rose-800">pCO2 = (1.5 × HCO3) + 8 ± 2</td>
                     </tr>
-                    <tr class="row-acidosis border-t border-rose-50">
-                        <td class="px-6 py-4 font-bold">Resp. Acidosis</td>
+                    <tr class="row-acidosis border-t border-rose-100">
+                        <td class="px-6 py-4">Respiratory Acidosis</td>
                         <td class="px-6 py-4">pCO2 ↑</td>
-                        <td class="px-6 py-4 italic font-mono text-rose-400">HCO3 ↑ 1 (Acute) / 3.5 (Chronic)</td>
+                        <td class="px-6 py-4 font-mono text-rose-800">HCO3 ↑ 1 (Acute) or 3.5 (Chronic)</td>
                     </tr>
-                    <tr class="row-alkalosis border-t border-slate-50">
-                        <td class="px-6 py-4 font-bold">Metabolic Alkalosis</td>
-                        <td class="px-6 py-4">HCO3 ↑</td>
-                        <td class="px-6 py-4 italic font-mono text-emerald-400">pCO2 = (0.7 × HCO3) + 20 ± 5</td>
+                    <tr class="row-alkalosis border-t border-slate-100">
+                        <td class="px-6 py-4">Metabolic Alkalosis</td>
+                        <td class="px-6 py-4">Bicarbonate ↑</td>
+                        <td class="px-6 py-4 font-mono text-emerald-800">pCO2 = (0.7 × HCO3) + 20 ± 5</td>
                     </tr>
-                    <tr class="row-alkalosis border-t border-emerald-50">
-                        <td class="px-6 py-4 font-bold">Resp. Alkalosis</td>
+                    <tr class="row-alkalosis border-t border-emerald-100">
+                        <td class="px-6 py-4">Respiratory Alkalosis</td>
                         <td class="px-6 py-4">pCO2 ↓</td>
-                        <td class="px-6 py-4 italic font-mono text-emerald-400">HCO3 ↓ 2 (Acute) / 5 (Chronic)</td>
+                        <td class="px-6 py-4 font-mono text-emerald-800">HCO3 ↓ 2 (Acute) or 5 (Chronic)</td>
                     </tr>
                 </tbody>
             </table>
@@ -204,7 +352,11 @@
         function toggleAnionGap() {
             const isChecked = document.getElementById('useAnionGap').checked;
             const agCard = document.getElementById('agResultCard');
+            const electrolyteGauges = document.getElementById('electrolyteGauges');
+            
             document.getElementById('anionGapInputs').classList.toggle('hidden', !isChecked);
+            electrolyteGauges.classList.toggle('hidden', !isChecked);
+            
             agCard.style.opacity = isChecked ? '1' : '0.4';
             calculate();
         }
@@ -227,116 +379,129 @@
             percent = Math.max(0, Math.min(100, percent));
             marker.style.opacity = '1'; 
             marker.style.left = `calc(${percent}% - 4px)`;
-            valDisplay.innerText = value.toFixed(id === 'ph' ? 2 : 1);
+            valDisplay.innerText = value.toFixed(id === 'ph' || id === 'albumin' ? 2 : 0);
         }
 
         function calculate() {
             const ph = parseFloat(document.getElementById('ph').value);
             const pco2 = parseFloat(document.getElementById('pco2').value);
             const hco3 = parseFloat(document.getElementById('hco3').value);
+            const na = parseFloat(document.getElementById('na').value);
+            const cl = parseFloat(document.getElementById('cl').value);
+            const alb = parseFloat(document.getElementById('albumin').value);
             
+            // Primary ABG Gauges
             updateGauge('ph', ph, 7.0, 7.8);
             updateGauge('pco2', pco2, 20, 70);
             updateGauge('hco3', hco3, 10, 40);
+
+            // Electrolyte Gauges (even if hidden, update state for consistency)
+            updateGauge('na', na, 120, 160);
+            updateGauge('cl', cl, 80, 125);
+            updateGauge('albumin', alb, 2.0, 6.0);
 
             const interpEl = document.getElementById('interpretation');
             const compEl = document.getElementById('compensation');
 
             if (isNaN(ph) || isNaN(pco2) || isNaN(hco3)) {
-                interpEl.innerText = "Awaiting Data";
-                interpEl.className = "text-2xl font-bold text-slate-200 mb-2";
-                compEl.innerHTML = "Enter labs above to begin analysis.";
+                interpEl.innerText = "Awaiting Input...";
+                interpEl.className = "text-xl font-black text-slate-300 mb-4 leading-tight uppercase tracking-tight";
+                compEl.innerHTML = "Enter arterial blood gas values to generate a full physiological interpretation.";
                 return;
             }
 
             let primary = "";
-            let color = "text-indigo-400";
+            let color = "text-slate-400";
             let cText = "";
 
-            // Check for Mixed/Triple Disturbances even if pH is normal
             const isAcidosis = ph < 7.35;
             const isAlkalosis = ph > 7.45;
-            const isNormalPh = ph >= 7.35 && ph <= 7.45;
 
-            // Determine Primary/Mixed
+            const pco2Acid = pco2 > 45;
+            const pco2Alkalosis = pco2 < 35;
+            const hco3Acid = hco3 < 22;
+            const hco3Alkalosis = hco3 > 26;
+
             if (isAcidosis) {
-                color = "text-rose-400";
-                if (pco2 > 45 && hco3 < 22) primary = "Mixed Resp & Met Acidosis";
-                else if (pco2 > 45) primary = "Resp. Acidosis";
-                else if (hco3 < 22) primary = "Met. Acidosis";
+                color = "text-rose-700";
+                if (pco2Acid && hco3Acid) primary = "Mixed Respiratory & Metabolic Acidosis";
+                else if (pco2Acid) primary = "Respiratory Acidosis";
+                else if (hco3Acid) primary = "Metabolic Acidosis";
+                else if (pco2Alkalosis && hco3Alkalosis) {
+                    primary = "Mixed Disorder Detected";
+                    cText = `<span class="text-rose-800 font-bold block mb-1">Acidemia with low pCO2 & high Bicarbonate</span>` + cText;
+                }
                 else primary = "Acidemia";
             } else if (isAlkalosis) {
-                color = "text-emerald-400";
-                if (pco2 < 35 && hco3 > 26) primary = "Mixed Resp & Met Alkalosis";
-                else if (pco2 < 35) primary = "Resp. Alkalosis";
-                else if (hco3 > 26) primary = "Met. Alkalosis";
+                color = "text-emerald-700";
+                if (pco2Alkalosis && hco3Alkalosis) primary = "Mixed Respiratory & Metabolic Alkalosis";
+                else if (pco2Alkalosis) primary = "Respiratory Alkalosis";
+                else if (hco3Alkalosis) primary = "Metabolic Alkalosis";
                 else primary = "Alkalemia";
             } else {
-                // pH is Normal, check for compensated disturbances
-                if (pco2 > 45 && hco3 > 26) primary = "Compensated Resp Acidosis / Met Alkalosis";
-                else if (pco2 < 35 && hco3 < 22) primary = "Compensated Resp Alkalosis / Met Acidosis";
-                else if (pco2 > 45 || pco2 < 35 || hco3 > 26 || hco3 < 22) primary = "Mixed Pattern (Compensated)";
-                else primary = "Normal ABG Range";
+                if (pco2Acid && hco3Alkalosis) primary = "Compensated Respiratory Acidosis / Metabolic Alkalosis";
+                else if (pco2Alkalosis && hco3Acid) primary = "Compensated Respiratory Alkalosis / Metabolic Acidosis";
+                else if (pco2Acid || pco2Alkalosis || hco3Alkalosis || hco3Acid) primary = "Mixed Disorder (Compensated)";
+                else primary = "Normal Profile";
                 color = "text-slate-600";
             }
 
-            interpEl.innerText = primary;
-            interpEl.className = `text-2xl font-bold ${color} mb-2 leading-tight`;
-
-            // Compensation Detail Logic
-            if (primary.includes("Met. Acidosis") || (isNormalPh && hco3 < 22)) {
-                const exp = (1.5 * hco3) + 8;
-                const min = exp - 2;
-                const max = exp + 2;
-                cText = `<strong>Winters' (Exp pCO2):</strong> ${min.toFixed(1)} - ${max.toFixed(1)}.`;
-                if (pco2 > max) cText += `<br><span class="text-rose-400 font-bold">Secondary Respiratory Acidosis detected.</span>`;
-                else if (pco2 < min) cText += `<br><span class="text-indigo-400 font-bold">Secondary Respiratory Alkalosis detected.</span>`;
+            if (hco3Acid) {
+                const expected = (1.5 * hco3) + 8;
+                const wintersText = `Winters' Expected pCO2: ${(expected-2).toFixed(1)} to ${(expected+2).toFixed(1)}.`;
+                if (cText) cText += "<br>";
+                cText += wintersText;
+                if (pco2 > expected+2) cText += `<br><span class="text-rose-800 font-bold uppercase text-[10px] mt-1 block tracking-wider">Concurrent Respiratory Acidosis Detected.</span>`;
+                else if (pco2 < expected-2) cText += `<br><span class="text-indigo-600 font-bold uppercase text-[10px] mt-1 block tracking-wider">Concurrent Respiratory Alkalosis Detected.</span>`;
             } 
-            else if (primary.includes("Resp. Acidosis") || (isNormalPh && pco2 > 45)) {
-                const d = pco2 - 40;
-                cText = `<strong>Exp HCO3:</strong> Acute: ${(24 + (d/10)).toFixed(1)} | Chronic: ${(24 + (3.5 * d/10)).toFixed(1)}`;
-                if (hco3 < (24 + (d/10)) - 2) cText += `<br><span class="text-rose-400 font-bold">Secondary Met. Acidosis detected.</span>`;
-            }
-            else if (primary.includes("Met. Alkalosis") || (isNormalPh && hco3 > 26)) {
-                const exp = (0.7 * hco3) + 20;
-                cText = `<strong>Expected pCO2:</strong> Approx ${exp.toFixed(1)} (±5).`;
-                if (pco2 > exp + 5) cText += `<br><span class="text-rose-400 font-bold">Secondary Respiratory Acidosis detected.</span>`;
+            
+            if (hco3Alkalosis) {
+                 const expected = (0.7 * hco3) + 20;
+                 if (cText) cText += "<br>";
+                 cText += `Expected pCO2 for Metabolic Alkalosis: ${(expected-5).toFixed(1)} to ${(expected+5).toFixed(1)}.`;
+                 if (pco2 < expected-5) cText += `<br><span class="text-indigo-600 font-bold uppercase text-[10px] mt-1 block tracking-wider">Concurrent Respiratory Alkalosis Detected.</span>`;
+                 else if (pco2 > expected+5) cText += `<br><span class="text-rose-800 font-bold uppercase text-[10px] mt-1 block tracking-wider">Concurrent Respiratory Acidosis Detected.</span>`;
             }
 
-            compEl.innerHTML = cText || "No complex secondary patterns identified.";
-
-            // AG Calculation
             const agActive = document.getElementById('useAnionGap').checked;
             if (agActive) {
-                const na = parseFloat(document.getElementById('na').value);
-                const cl = parseFloat(document.getElementById('cl').value);
-                const alb = parseFloat(document.getElementById('albumin').value) || 4.0;
+                const albVal = isNaN(alb) ? 4.0 : alb;
+                
                 if (!isNaN(na) && !isNaN(cl)) {
                     const ag = na - (cl + hco3);
-                    const agC = ag + (2.5 * (4.0 - alb));
+                    const agC = ag + (2.5 * (4.0 - albVal));
                     document.getElementById('agValue').innerText = ag.toFixed(1);
                     document.getElementById('agCorrected').innerText = agC.toFixed(1);
                     
+                    const deltaEl = document.getElementById('deltaResult');
                     if (agC > 12) {
-                        document.getElementById('deltaResult').innerText = "HAGMA Detected";
-                        // Triple disturbance check (Delta Gap)
+                        deltaEl.innerText = "High Anion Gap Metabolic Acidosis";
+                        deltaEl.className = "text-[10px] font-bold text-rose-700 border border-rose-200 bg-rose-50 px-3 py-1.5 rounded-lg inline-block uppercase tracking-widest";
+                        
                         const deltaGap = agC - 12;
                         const startingHCO3 = deltaGap + hco3;
-                        if (startingHCO3 > 26) compEl.innerHTML += `<br><span class="text-emerald-500 font-bold">Triple: Concomitant Met. Alkalosis detected.</span>`;
-                        else if (startingHCO3 < 22) compEl.innerHTML += `<br><span class="text-rose-500 font-bold">Triple: Concomitant NAGMA detected.</span>`;
+                        
+                        if (startingHCO3 > 26) {
+                            primary = "Mixed Disorder Detected";
+                            const detail = "HAGMA + Metabolic Alkalosis";
+                            cText = `<span class="text-emerald-700 font-bold block mb-1">${detail}</span>` + cText;
+                            cText += `<br><div class="triple-badge mt-2">Triple Disorder Analysis</div><br><span class="text-emerald-700 font-bold uppercase text-[10px] tracking-wider">Concurrent Metabolic Alkalosis (Delta-Delta > 26: ${startingHCO3.toFixed(1)})</span>`;
+                        } else if (startingHCO3 < 22) {
+                            primary = "Mixed Disorder Detected";
+                            const detail = "HAGMA + NAGMA";
+                            cText = `<span class="text-rose-900 font-bold block mb-1">${detail}</span>` + cText;
+                            cText += `<br><div class="triple-badge mt-2">Triple Disorder Analysis</div><br><span class="text-rose-900 font-bold uppercase text-[10px] tracking-wider">Concurrent Non-Anion Gap Metabolic Acidosis (Delta-Delta < 22: ${startingHCO3.toFixed(1)})</span>`;
+                        }
                     } else {
-                        document.getElementById('deltaResult').innerText = "Normal Gap";
+                        deltaEl.innerText = "Normal Anion Gap";
+                        deltaEl.className = "text-[10px] font-bold text-slate-400 border border-slate-200 px-3 py-1.5 rounded-lg inline-block uppercase tracking-widest";
                     }
-                } else {
-                    document.getElementById('agValue').innerText = "--";
-                    document.getElementById('agCorrected').innerText = "--";
-                    document.getElementById('deltaResult').innerText = "Incomplete Data";
                 }
-            } else {
-                document.getElementById('agValue').innerText = "--";
-                document.getElementById('agCorrected').innerText = "--";
-                document.getElementById('deltaResult').innerText = "Disabled";
             }
+
+            interpEl.innerText = primary.toUpperCase();
+            interpEl.className = `text-xl font-black ${color} mb-4 leading-tight uppercase tracking-tight`;
+            compEl.innerHTML = cText || "Enter additional values or enable Anion Gap calculation for complex case analysis.";
         }
     </script>
 </body>
